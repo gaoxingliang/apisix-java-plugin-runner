@@ -41,12 +41,14 @@ public class EncryptResponseFilter implements PluginFilter {
             response.setStatusCode(403);
             response.setBody(Constants.ERROR_NOT_FOUND);
             logger.warn("not found the user, maybe disabled. wolfuserid: {}", userId);
-        } else {
+        } else if (request.getUpstreamStatusCode() == 200) {
             String encryptedBody = userService.encryptBody(request.getBody(Charset.forName("UTF-8")), user);
             response.setBody(encryptedBody);
             response.setHeader(Constants.HEADER_RESPONSEBODY_ENCRYPTED_FLAG, "true");
-            response.setStatusCode(request.getUpstreamStatusCode());
-            logger.info("EncryptResponseFilter success：user(wolf)：{}，{}", user.getUserid(), encryptedBody);
+            response.setStatusCode(200);
+            logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}", user.getUserid(), encryptedBody);
+        } else {
+            logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}", request.getUpstreamStatusCode(), request.getUpstreamHeaders());
         }
 
         chain.postFilter(request, response);
@@ -68,4 +70,6 @@ public class EncryptResponseFilter implements PluginFilter {
     public Boolean requiredBody() {
         return true;
     }
+
+
 }

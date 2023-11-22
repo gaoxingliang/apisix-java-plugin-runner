@@ -47,6 +47,13 @@ public class PostRequest implements A6Request {
 
     public PostRequest(Req req) {
         this.req = req;
+        this.status = req.status();
+        headers = new HashMap<>();
+        for (int i = 0; i < req.headersLength(); i++) {
+            TextEntry header = req.headers(i);
+            headers.putIfAbsent(header.name(), new ArrayList<>());
+            headers.get(header.name()).add(header.value());
+        }
     }
 
     public static PostRequest from(ByteBuffer body) {
@@ -83,14 +90,6 @@ public class PostRequest implements A6Request {
     }
 
     public Map<String, List<String>> getUpstreamHeaders() {
-        if (Objects.isNull(headers)) {
-            headers = new HashMap<>();
-            for (int i = 0; i < req.headersLength(); i++) {
-                TextEntry header = req.headers(i);
-                headers.putIfAbsent(header.name(), new ArrayList<>());
-                headers.get(header.name()).add(header.value());
-            }
-        }
         return headers;
     }
 
