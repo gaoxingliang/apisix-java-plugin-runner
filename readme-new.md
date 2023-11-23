@@ -6,6 +6,7 @@ user request --> wolf --> decrypt the request body ---> upstream xxx --> encrypt
 the apisix has some issues which can:<br>
 1、rewrite the body and send to upstream in ext-plugin-post-req.<br>
 2、we can't correlate the request and response between ext-plugin-post-req and ext-plugin-post-resp.<br> 
+3、can't parse the upstream status code correctly. <br>
 
 So in this project, I changed some code to make sure it can work as expected.<br>
 I implemented [DecryptRequestFilter](runner-starter/src/main/java/org/apache/apisix/plugin/runner/filter/DecryptRequestFilter.java)
