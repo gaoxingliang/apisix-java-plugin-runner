@@ -44,6 +44,9 @@ public class EncryptResponseFilter implements PluginFilter {
         } else if (request.getUpstreamStatusCode() == 200) {
             String encryptedBody = userService.encryptBody(request.getBody(Charset.forName("UTF-8")), user);
             response.setBody(encryptedBody);
+            // remove the header because the length is mismatch after encrypted.
+            // note it's case SENSITIVE.
+            response.setHeader("Content-Length", null);
             response.setStatusCode(200);
             logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}", user.getUserid(), encryptedBody, request.getUpstreamHeaders());
         } else {
