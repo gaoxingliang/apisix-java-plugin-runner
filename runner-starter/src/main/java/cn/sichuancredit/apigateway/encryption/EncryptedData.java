@@ -4,4 +4,5 @@ package cn.sichuancredit.apigateway.encryption;
 public class EncryptedData {
     String encryptKey;
     String data;
+    String dataStatus;
 }

@@ -42,7 +42,12 @@ public class EncryptResponseFilter implements PluginFilter {
             response.setBody(Constants.ERROR_NOT_FOUND);
             logger.warn("not found the user, maybe disabled. wolfuserid: {}", userId);
         } else if (request.getUpstreamStatusCode() == 200) {
-            String encryptedBody = userService.encryptBody(request.getBody(Charset.forName("UTF-8")), user);
+            List<String> status = request.getUpstreamHeaders().get(Constants.HEADER_DATA_STATUS);
+            String dataStatus = null;
+            if (status != null && status.size() >= 1) {
+                dataStatus = status.get(0);
+            }
+            String encryptedBody = userService.encryptBody(request.getBody(Charset.forName("UTF-8")), user, dataStatus);
             response.setBody(encryptedBody);
             // remove the header because the length is mismatch after encrypted.
             // note it's case SENSITIVE.

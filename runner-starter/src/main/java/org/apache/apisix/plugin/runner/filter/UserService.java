@@ -50,7 +50,7 @@ public class UserService {
         return MySmUtil.sm4Decrypt(data.getData(), sm4Key);
     }
 
-    public String encryptBody(String body, User user) {
+    public String encryptBody(String body, User user, String dataStatus) {
         Preconditions.checkNotNull(user);
         if (StringUtils.isEmpty(body)) {
             return body;
@@ -64,6 +64,7 @@ public class UserService {
         EncryptedData encryptedData = new EncryptedData();
         encryptedData.setData(data);
         encryptedData.setEncryptKey(encryptKey);
+        encryptedData.setDataStatus(ObjectUtils.firstNonNull(dataStatus, "STATUS_OK"));
 
         logger.info("encryptBody:{}, wolfuser:{}", data, user.getUserid());
         return JSONObject.toJSONString(encryptedData);
