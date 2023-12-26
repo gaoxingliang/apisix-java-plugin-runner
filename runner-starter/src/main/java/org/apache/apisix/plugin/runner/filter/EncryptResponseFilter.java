@@ -1,5 +1,6 @@
 package org.apache.apisix.plugin.runner.filter;
 
+import cn.hutool.core.map.*;
 import org.apache.apisix.plugin.runner.*;
 import org.apache.apisix.plugin.runner.db.*;
 import org.apache.apisix.plugin.runner.db.model.*;
@@ -28,10 +29,11 @@ public class EncryptResponseFilter implements PluginFilter {
 
     @Override
     public void postFilter(PostRequest request, PostResponse response, PluginFilterChain chain) {
-        List<String> userIds = request.getUpstreamHeaders().get(Constants.HEADER_USER_ID);
+        Map<String, List<String>> headers = new CaseInsensitiveMap<>(request.getUpstreamHeaders());
+        List<String> userIds = headers.get(Constants.HEADER_USER_ID);
         String userId = null;
         if (CollectionUtils.isEmpty(userIds)) {
-            logger.warn("No user found in request:{}", request.getUpstreamHeaders());
+            logger.warn("No user found in request:{}", headers);
         } else {
             userId = userIds.get(0);
         }
@@ -42,7 +44,7 @@ public class EncryptResponseFilter implements PluginFilter {
             response.setBody(Constants.ERROR_NOT_FOUND);
             logger.warn("not found the user, maybe disabled. wolfuserid: {}", userId);
         } else if (request.getUpstreamStatusCode() == 200) {
-            List<String> status = request.getUpstreamHeaders().get(Constants.HEADER_DATA_STATUS);
+            List<String> status = headers.get(Constants.HEADER_DATA_STATUS);
             String dataStatus = null;
             if (status != null && status.size() >= 1) {
                 dataStatus = status.get(0);
@@ -53,9 +55,9 @@ public class EncryptResponseFilter implements PluginFilter {
             // note it's case SENSITIVE.
             response.setHeader("Content-Length", null);
             response.setStatusCode(200);
-            logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}", user.getUserid(), encryptedBody, request.getUpstreamHeaders());
+            logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}", user.getUserid(), encryptedBody, headers);
         } else {
-            logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}", request.getUpstreamStatusCode(), request.getUpstreamHeaders());
+            logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}", request.getUpstreamStatusCode(), headers);
         }
 
         chain.postFilter(request, response);
