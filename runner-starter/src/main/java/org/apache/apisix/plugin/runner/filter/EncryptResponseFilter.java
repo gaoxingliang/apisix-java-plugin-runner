@@ -38,7 +38,7 @@ public class EncryptResponseFilter implements PluginFilter {
             userId = userIds.get(0);
         }
 
-        User user = userService.tryFindUser(userId);
+        User user = userService.tryFindUser(userId, User.PROVIDER_OTHER);
         if (user == null) {
             response.setStatusCode(403);
             response.setBody(Constants.ERROR_NOT_FOUND);

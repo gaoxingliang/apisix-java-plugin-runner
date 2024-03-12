@@ -24,8 +24,10 @@ mvn install -DskipTests -Dgpg.skip=true
 cd runner-plugin-sdk
 mvn install -DskipTests -Dgpg.skip=true
 
+```
+build the plugin jar (put it into apisix):
+```
 mvn package task in the apisix java runner starter module.
-
 ```
 also need the required 0.6.1-RELEASE for https://github.com/api7/ext-plugin-proto. (the jar is not released at 2023/11/20).
 ```shell
@@ -94,6 +96,7 @@ https://github.com/apache/apisix/pull/9990
 
 
 # require db information
+公钥加密 私钥解密
 ```sql
 CREATE DATABASE apigateway;
 CREATE TABLE apigateway.user
@@ -102,14 +105,18 @@ CREATE TABLE apigateway.user
     userid      int unique                          not null COMMENT 'wolf中的用户id',
     publickey   varchar(1024)                       not null COMMENT '公钥',
     privatekey  varchar(1024)                       not null COMMENT '私钥',
+    provider   int     not null COMMENT 'key使用途径， 1 - 对方提供，对方提供时无私钥，用于加密给对方的返回数据 2 -- 我方生成。用于解密对方的发送数据，有公私钥', 
     status      tinyint(1) default 1 not null comment '状态：1.正常 0.删除',
     gmtcreate   timestamp default CURRENT_TIMESTAMP not null comment '创建时间',
     gmtmodified timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '修改时间'
 )
 ```
 
-# generate the encryption key pair
+# When new user comes
+## generate the encryption key pair
 [MySmUtilTest.java](./runner-starer/src/test/java/cn/sichuancredit/apigateway/encryption/MySmUtilTest.java)
+- they need to provide a PUB key and send to us. 
+- we should generate a pub/private key pair and send PUB to them.
 
 # how it works
 https://github.com/apache/apisix-java-plugin-runner/blob/main/docs/en/latest/how-it-works.md

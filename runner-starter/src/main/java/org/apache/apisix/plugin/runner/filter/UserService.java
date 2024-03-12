@@ -18,14 +18,20 @@ public class UserService {
     @Autowired
     UserDao userDao;
 
-    public User tryFindUser(String userIdValue) {
+    /**
+     *
+     * @param userIdValue
+     * @param provider {@link User#PROVIDER_US} or {@link User#PROVIDER_OTHER}
+     * @return
+     */
+    public User tryFindUser(String userIdValue, int provider) {
         logger.info("输入wolf userid:{}", userIdValue);
         User user = null;
         if (userIdValue == null || userIdValue.trim().isEmpty()) {
             logger.warn("header中未找到用");
         } else {
             try {
-                user = userDao.selectByWolfUserId(Integer.valueOf(userIdValue));
+                user = userDao.selectByWolfUserId(Integer.valueOf(userIdValue), provider);
             } catch (Exception e) {
                 logger.warn("无法获取用户：{}", userIdValue, e);
             }

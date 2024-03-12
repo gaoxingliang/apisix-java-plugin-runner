@@ -5,5 +5,5 @@ import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserDao {
-    User selectByWolfUserId(int wolfUserId);
+    User selectByWolfUserId(@Param("wolfUserId") int wolfUserId, @Param("provider") int provider);
 }

@@ -17,6 +17,6 @@
     select 
     <include refid="Base_Column_List" />
     from user
-    where userid = #{wolfUserId,jdbcType=INTEGER} and status = 1
+    where userid = #{wolfUserId,jdbcType=INTEGER} and status = 1 and provider = #{provider,jdbcType=INTEGER} limit 1
   </select>
 </mapper>
