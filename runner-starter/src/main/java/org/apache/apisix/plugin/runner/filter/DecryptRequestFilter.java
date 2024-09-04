@@ -19,6 +19,7 @@ package org.apache.apisix.plugin.runner.filter;
 
 import org.apache.apisix.plugin.runner.*;
 import org.apache.apisix.plugin.runner.db.model.*;
+import org.apache.commons.lang3.*;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
@@ -66,7 +67,7 @@ public class DecryptRequestFilter implements PluginFilter {
 
     @Override
     public void filter(HttpRequest request, HttpResponse response, PluginFilterChain chain) {
-        logger.info("input headers:{}, raw input:{}", request.getHeaders(), request.getBody());
+        logger.info("input headers:{}, raw input:{}, url:{}", request.getHeaders(), request.getBody(), request.getPath());
         User user = userService.tryFindUser(request.getHeader(Constants.HEADER_USER_ID), User.PROVIDER_US);
         if (user == null) {
             response.setStatusCode(403);
@@ -77,7 +78,8 @@ public class DecryptRequestFilter implements PluginFilter {
                 String decryptedBody = userService.decryptBody(request.getBody(), user);
                 request.changeBody(decryptedBody);
                 request.setHeader(HEADER_REQUESTBODY_ENCRYPTED_FLAG, "true");
-                logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(), decryptedBody);
+                logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(),
+                        StringUtils.abbreviate(decryptedBody, 1024 * 2));
             } catch (Exception e) {
                 logger.error("decrypt request failure", e);
                 response.setStatusCode(400);

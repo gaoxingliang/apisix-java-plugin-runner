@@ -52,8 +52,11 @@ public class EncryptResponseFilter implements PluginFilter {
             String encryptedBody = userService.encryptBody(request.getBody(Charset.forName("UTF-8")), user, dataStatus);
             response.setBody(encryptedBody);
             // remove the header because the length is mismatch after encrypted.
-            // note it's case SENSITIVE.
+            // note it's case SENSITIVE. remove this header
             response.setHeader("Content-Length", null);
+            // remove the transfer-encoding to make sure no two same value is added.
+            // If the upstream add this header, and apisix will add this too. this will cause the outer nginx error.
+            response.setHeader("Transfer-Encoding", null);
             response.setStatusCode(200);
             logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}", user.getUserid(), encryptedBody, headers);
         } else {
