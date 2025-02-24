@@ -25,8 +25,10 @@ import org.springframework.util.CollectionUtils;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ArrayList;
 
 public class PostRequest implements A6Request {
     private final Req req;
@@ -35,7 +37,7 @@ public class PostRequest implements A6Request {
 
     private Map<String, String> config;
 
-    private Map<String, String> headers;
+    private Map<String, List<String>> headers;
 
     private Integer status;
 
@@ -45,11 +47,22 @@ public class PostRequest implements A6Request {
 
     public PostRequest(Req req) {
         this.req = req;
+        this.status = req.status();
+        headers = new HashMap<>();
+        for (int i = 0; i < req.headersLength(); i++) {
+            TextEntry header = req.headers(i);
+            headers.putIfAbsent(header.name(), new ArrayList<>());
+            headers.get(header.name()).add(header.value());
+        }
     }
 
     public static PostRequest from(ByteBuffer body) {
         Req req = Req.getRootAsReq(body);
         return new PostRequest(req);
+    }
+
+    public Map<String, String> getVarsMap() {
+        return vars;
     }
 
     @Override
@@ -76,14 +89,7 @@ public class PostRequest implements A6Request {
         return config.getOrDefault(filter.name(), null);
     }
 
-    public Map<String, String> getUpstreamHeaders() {
-        if (Objects.isNull(headers)) {
-            headers = new HashMap<>();
-            for (int i = 0; i < req.headersLength(); i++) {
-                TextEntry header = req.headers(i);
-                headers.put(header.name(), header.value());
-            }
-        }
+    public Map<String, List<String>> getUpstreamHeaders() {
         return headers;
     }
 
