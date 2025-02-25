@@ -75,11 +75,24 @@ public class DecryptRequestFilter implements PluginFilter {
             logger.warn("未找到用户：{}", request.getHeaders());
         } else {
             try {
-                String decryptedBody = userService.decryptBody(request.getBody(), user);
-                request.changeBody(decryptedBody);
-                request.setHeader(HEADER_REQUESTBODY_ENCRYPTED_FLAG, "true");
-                logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(),
-                        StringUtils.abbreviate(decryptedBody, 1024 * 2));
+                String contentType = request.getHeader(HEADER_CONTENT_TYPE);
+                if (contentType != null && contentType.startsWith(Constants.HEADER_TYPE_MULTIPART_FORM)) {
+                    // 如果是form类 暂时不加密
+                    String encryptedFields = request.getHeader(HEADER_FORM_ENCRYPTED_FIELDS);
+                    if ("none".equalsIgnoreCase(encryptedFields)) {
+                        // 什么都不加解密
+//                        request.setBody(request.getBody());
+                        logger.info("DecryptRequestFilter：request:{}, user：{}，do nothing for form fields", request.getRequestId(), user.getUserid());
+                    } else {
+                        throw new IllegalArgumentException("暂不支持指定对字段加密" + encryptedFields);
+                    }
+                } else {
+                    String decryptedBody = userService.decryptBody(request.getBody(), user);
+                    request.changeBody(decryptedBody);
+                    request.setHeader(HEADER_REQUESTBODY_ENCRYPTED_FLAG, "true");
+                    logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(),
+                            StringUtils.abbreviate(decryptedBody, 1024 * 2));
+                }
             } catch (Exception e) {
                 logger.error("decrypt request failure", e);
                 response.setStatusCode(400);
