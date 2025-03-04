@@ -76,7 +76,10 @@ public class DecryptRequestFilter implements PluginFilter {
         } else {
             try {
                 String contentType = request.getHeader(HEADER_CONTENT_TYPE);
-                if (contentType != null && contentType.startsWith(Constants.HEADER_TYPE_MULTIPART_FORM)) {
+                if (contentType != null &&
+                        (contentType.startsWith(Constants.HEADER_TYPE_MULTIPART_FORM) // if form with file
+                                || contentType.startsWith(HEADER_TYPE_FORM_URLENCODED)) // if form without file
+                ) {
                     // 如果是form类 暂时不加密
                     String encryptedFields = request.getHeader(HEADER_FORM_ENCRYPTED_FIELDS);
                     if ("none".equalsIgnoreCase(encryptedFields)) {

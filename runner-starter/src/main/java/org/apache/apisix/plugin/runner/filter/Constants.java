@@ -13,6 +13,7 @@ public class Constants {
     public static final String HEADER_REQUESTBODY_ENCRYPTED_FLAG = HEADER_INTERNAL_PREFIX + "request-decrypt";
     public static final String HEADER_CONTENT_TYPE = "content-type";
     public static final String HEADER_TYPE_MULTIPART_FORM = "multipart/form-data";
+    public static final String HEADER_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String HEADER_FORM_ENCRYPTED_FIELDS = "form-encrypted-fields";
 
     public static final String ERROR_NOT_FOUND = "Error: user not found";
