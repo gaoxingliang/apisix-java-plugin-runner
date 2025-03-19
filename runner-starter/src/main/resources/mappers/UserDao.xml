@@ -7,11 +7,12 @@
     <result column="publickey" jdbcType="VARCHAR" property="publickey" />
     <result column="privatekey" jdbcType="VARCHAR" property="privatekey" />
     <result column="status" jdbcType="BOOLEAN" property="status" />
+    <result column="provider" jdbcType="INTEGER" property="provider" />
     <result column="gmtcreate" jdbcType="TIMESTAMP" property="gmtcreate" />
     <result column="gmtmodified" jdbcType="TIMESTAMP" property="gmtmodified" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, userid, publickey, privatekey, `status`, gmtcreate, gmtmodified
+    id, userid, publickey, privatekey, provider, `status`, gmtcreate, gmtmodified
   </sql>
   <select id="selectByWolfUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
