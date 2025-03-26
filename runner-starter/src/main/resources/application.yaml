@@ -24,7 +24,7 @@ socket:
 
 logging:
   level:
-    root: debug
+    root: info
 
 #apisix:
 #  runner:
