@@ -4,6 +4,7 @@ import cn.hutool.core.map.*;
 import org.apache.apisix.plugin.runner.*;
 import org.apache.apisix.plugin.runner.db.*;
 import org.apache.apisix.plugin.runner.db.model.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
@@ -30,6 +31,7 @@ public class EncryptResponseFilter implements PluginFilter {
     @Override
     public void postFilter(PostRequest request, PostResponse response, PluginFilterChain chain) {
         Map<String, List<String>> headers = new CaseInsensitiveMap<>(request.getUpstreamHeaders());
+        logger.info("Receive upstream response, headers:{}", headers);
         List<String> userIds = headers.get(Constants.HEADER_USER_ID);
         String userId = null;
         if (CollectionUtils.isEmpty(userIds)) {
@@ -58,9 +60,17 @@ public class EncryptResponseFilter implements PluginFilter {
             // If the upstream add this header, and apisix will add this too. this will cause the outer nginx error.
             response.setHeader("Transfer-Encoding", null);
             response.setStatusCode(200);
-            logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}", user.getUserid(), encryptedBody, headers);
+            logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}",
+                    user.getUserid(),
+                    StringUtils.abbreviate(encryptedBody, 512), headers
+            );
         } else {
             logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}", request.getUpstreamStatusCode(), headers);
+            try {
+                response.setStatusCode(Optional.ofNullable(request.getUpstreamStatusCode()).orElse(500));
+                // if code is not 200, just return the raw response
+                response.setBody(request.getBody(Charset.forName("UTF-8")));
+            } catch (Exception ignore){}
         }
 
         chain.postFilter(request, response);

@@ -67,7 +67,7 @@ public class DecryptRequestFilter implements PluginFilter {
 
     @Override
     public void filter(HttpRequest request, HttpResponse response, PluginFilterChain chain) {
-        logger.info("input headers:{}, raw input:{}, url:{}", request.getHeaders(), request.getBody(), request.getPath());
+        logger.info("input headers:{}, url:{}, raw input:{}, ", request.getHeaders(), request.getPath(), StringUtils.abbreviate(request.getBody(), 512));
         User user = userService.tryFindUser(request.getHeader(Constants.HEADER_USER_ID), User.PROVIDER_US);
         if (user == null) {
             response.setStatusCode(403);
