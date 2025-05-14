@@ -41,6 +41,10 @@ public class EncryptResponseFilter implements PluginFilter {
         }
 
         User user = userService.tryFindUser(userId, User.PROVIDER_OTHER);
+        // remove the transfer-encoding to make sure no two same value is added.
+        // If the upstream add this header, and apisix will add this too. this will cause the outer nginx error:
+        //      -> upstream sent duplicate header line: "transfer-encoding: chunked", previous value: "Transfer-Encoding: chunked" while reading response header from upstream
+        response.setHeader("Transfer-Encoding", null);
         if (user == null) {
             response.setStatusCode(403);
             response.setBody(Constants.ERROR_NOT_FOUND);
@@ -56,9 +60,6 @@ public class EncryptResponseFilter implements PluginFilter {
             // remove the header because the length is mismatch after encrypted.
             // note it's case SENSITIVE. remove this header
             response.setHeader("Content-Length", null);
-            // remove the transfer-encoding to make sure no two same value is added.
-            // If the upstream add this header, and apisix will add this too. this will cause the outer nginx error.
-            response.setHeader("Transfer-Encoding", null);
             response.setStatusCode(200);
             logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}",
                     user.getUserid(),
@@ -66,11 +67,16 @@ public class EncryptResponseFilter implements PluginFilter {
             );
         } else {
             logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}", request.getUpstreamStatusCode(), headers);
+            response.setStatusCode(Optional.ofNullable(request.getUpstreamStatusCode()).orElse(500));
             try {
-                response.setStatusCode(Optional.ofNullable(request.getUpstreamStatusCode()).orElse(500));
                 // if code is not 200, just return the raw response
-                response.setBody(request.getBody(Charset.forName("UTF-8")));
-            } catch (Exception ignore){}
+                String rawResponseBody = request.getBody(Charset.forName("UTF-8"));
+                logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}, raw response body:{}",  request.getUpstreamStatusCode(), headers, rawResponseBody);
+                response.setBody(rawResponseBody);
+                response.setHeader("Content-Length", null);
+            } catch (Exception e){
+                logger.warn("EncryptResponseFilter return non 200 code fail to set response body", e);
+            }
         }
 
         chain.postFilter(request, response);
