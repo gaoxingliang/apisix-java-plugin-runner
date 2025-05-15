@@ -93,6 +93,7 @@ public class DecryptRequestFilter implements PluginFilter {
                     String decryptedBody = userService.decryptBody(request.getBody(), user);
                     request.changeBody(decryptedBody);
                     request.setHeader(HEADER_REQUESTBODY_ENCRYPTED_FLAG, "true");
+                    request.setHeader(HEADER_SOURCE, HEADER_SOURCE_VALUE_SOURCE_DATA);
                     logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(),
                             StringUtils.abbreviate(decryptedBody, 1024 * 2));
                 }
