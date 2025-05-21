@@ -24,6 +24,8 @@ import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
 
+import java.util.*;
+
 import static org.apache.apisix.plugin.runner.filter.Constants.*;
 
 /**
@@ -35,6 +37,9 @@ public class DecryptRequestFilter implements PluginFilter {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    LogService logService;
 
     @Override
     public String name() {
@@ -67,7 +72,7 @@ public class DecryptRequestFilter implements PluginFilter {
 
     @Override
     public void filter(HttpRequest request, HttpResponse response, PluginFilterChain chain) {
-        logger.info("input headers:{}, url:{}, raw input:{}, ", request.getHeaders(), request.getPath(), StringUtils.abbreviate(request.getBody(), 512));
+        logger.info("input headers:{}, url:{}, raw input:{}, ", request.getHeaders(), request.getPath(), StringUtils.abbreviate(request.getBody(), 32));
         User user = userService.tryFindUser(request.getHeader(Constants.HEADER_USER_ID), User.PROVIDER_US);
         if (user == null) {
             response.setStatusCode(403);
@@ -75,7 +80,23 @@ public class DecryptRequestFilter implements PluginFilter {
             logger.warn("未找到用户：{}", request.getHeaders());
         } else {
             try {
+                // set the internal request id
                 request.setHeader(HEADER_SOURCE, HEADER_SOURCE_VALUE_SOURCE_DATA);
+                String requestId = request.getHeader(HEADER_REQUEST_ID);
+                if (StringUtils.isBlank(requestId)) {
+                    requestId = UUID.randomUUID().toString().toLowerCase();
+                }
+                request.setHeader(HEADER_INTERNAL_REQUEST_ID, requestId);
+                ApiLog log = new ApiLog();
+                log.setUserid(user.getUserid());
+                log.setMethod(request.getMethod().toString());
+                log.setPath(request.getPath());
+                log.setIp(request.getSourceIP());
+                log.setRequestId(requestId);
+                StringBuilder requestArgs = new StringBuilder(256);
+                request.getArgs().forEach((k,v) -> requestArgs.append(k).append('=').append(v).append('&'));
+                log.setRequestParameters(requestArgs.toString());
+
                 String contentType = request.getHeader(HEADER_CONTENT_TYPE);
                 if (contentType != null &&
                         (contentType.startsWith(Constants.HEADER_TYPE_MULTIPART_FORM) // if form with file
@@ -85,18 +106,20 @@ public class DecryptRequestFilter implements PluginFilter {
                     String encryptedFields = request.getHeader(HEADER_FORM_ENCRYPTED_FIELDS);
                     if ("none".equalsIgnoreCase(encryptedFields)) {
                         // 什么都不加解密
-//                        request.setBody(request.getBody());
                         logger.info("DecryptRequestFilter：request:{}, user：{}，do nothing for form fields", request.getRequestId(), user.getUserid());
+                        // form可能传文件。只记录更少的参数
+                        log.setRequestBody(request.getBody());
                     } else {
                         throw new IllegalArgumentException("暂不支持指定对字段加密" + encryptedFields);
                     }
                 } else {
                     String decryptedBody = userService.decryptBody(request.getBody(), user);
                     request.changeBody(decryptedBody);
+                    log.setRequestBody(decryptedBody);
                     request.setHeader(HEADER_REQUESTBODY_ENCRYPTED_FLAG, "true");
-                    logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(),
-                            StringUtils.abbreviate(decryptedBody, 1024 * 2));
+                    logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(), StringUtils.abbreviate(decryptedBody, 128));
                 }
+                logService.logRequestStart(log);
             } catch (Exception e) {
                 logger.error("decrypt request failure", e);
                 response.setStatusCode(400);
