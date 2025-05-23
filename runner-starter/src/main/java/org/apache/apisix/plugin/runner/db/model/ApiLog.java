@@ -19,6 +19,7 @@ public class ApiLog {
     private String status;
     private long elapse;
     private String response;
+    private int responseLength;
     private int code;
     private String requestId;
     private String ip;
@@ -52,5 +53,6 @@ public class ApiLog {
 
     public void setResponse(String response) {
         this.response = StringUtils.abbreviate(response, RESPONSE_MAX_LENGTH);
+        this.responseLength = response == null ? 0 : response.length();
     }
 }
