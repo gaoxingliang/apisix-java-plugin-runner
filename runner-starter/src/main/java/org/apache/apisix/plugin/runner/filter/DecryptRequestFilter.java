@@ -77,7 +77,7 @@ public class DecryptRequestFilter implements PluginFilter {
         if (user == null) {
             response.setStatusCode(403);
             response.setBody(ERROR_NOT_FOUND);
-            logger.warn("未找到用户：{}", request.getHeaders());
+            logger.warn("未找到用户:{}", request.getHeaders());
         } else {
             try {
                 // set the internal request id
@@ -106,7 +106,7 @@ public class DecryptRequestFilter implements PluginFilter {
                     String encryptedFields = request.getHeader(HEADER_FORM_ENCRYPTED_FIELDS);
                     if ("none".equalsIgnoreCase(encryptedFields)) {
                         // 什么都不加解密
-                        logger.info("DecryptRequestFilter：request:{}, user：{}，do nothing for form fields", request.getRequestId(), user.getUserid());
+                        logger.info("DecryptRequestFilter request:{}, user:{},do nothing for form fields", request.getRequestId(), user.getUserid());
                         // form可能传文件。只记录更少的参数
                         log.setRequestBody(request.getBody());
                     } else {
@@ -117,7 +117,7 @@ public class DecryptRequestFilter implements PluginFilter {
                     request.changeBody(decryptedBody);
                     log.setRequestBody(decryptedBody);
                     request.setHeader(HEADER_REQUESTBODY_ENCRYPTED_FLAG, "true");
-                    logger.info("DecryptRequestFilter：request:{}, user：{}，{}", request.getRequestId(), user.getUserid(), StringUtils.abbreviate(decryptedBody, 128));
+                    logger.info("DecryptRequestFilter request:{}, user: {},{}", request.getRequestId(), user.getUserid(), StringUtils.abbreviate(decryptedBody, 128));
                 }
                 logService.logRequestStart(log);
             } catch (Exception e) {

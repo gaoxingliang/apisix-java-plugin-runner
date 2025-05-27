@@ -23,6 +23,8 @@ public class Constants {
     public static final String HEADER_FORM_ENCRYPTED_FIELDS = "form-encrypted-fields";
     public static final String HEADER_USERNAME = HEADER_INTERNAL_PREFIX + "username";
     public static final String HEADER_NICKNAME = HEADER_INTERNAL_PREFIX + "nickname";
+    public static final String HEADER_ZIP_VERSION = HEADER_INTERNAL_PREFIX + "zip-version";
+    public static final String HEADER_ZIP_VERSION_VALUE_GZIP = "1";
 
     public static final String HEADER_REQUEST_ID = "x-request-id";
     public static final String HEADER_INTERNAL_REQUEST_ID = HEADER_INTERNAL_PREFIX + HEADER_REQUEST_ID;

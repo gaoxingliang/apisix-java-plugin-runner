@@ -35,12 +35,38 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 
+logging:
+  level:
+    root: INFO
+
+kafka:
+  bootstrap: 127.0.0.1:9094
+  apiLogTopic: apilog
+
+  # 单次batch的字节大小
+  batchSize: 1048576
+  # 最多等待多少毫秒等待新的记录
+  lingerMs: 0
+  # 最大20MB
+  maxRequestSize: 20971520
+  # 等待处理时长
+  maxBlockMs: 10000
+
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/apigateway?serverTimezone=GMT%2B8&characterEncoding=utf-8
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: root
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
+    apigateway:
+      jdbc-url: jdbc:mysql://127.0.0.1:3306/apigateway?serverTimezone=GMT%2B8&characterEncoding=utf-8
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: root
+      hikari:
+        minimum-idle: 5
+        maximum-pool-size: 20
+    logging:
+      jdbc-url: jdbc:mysql://127.0.0.1:3306/logging?serverTimezone=GMT%2B8&characterEncoding=utf-8
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: root
+      password: root
+      hikari:
+        minimum-idle: 1
+        maximum-pool-size: 10

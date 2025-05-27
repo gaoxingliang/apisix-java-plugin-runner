@@ -157,7 +157,7 @@ public class UserService {
         encryptedData.setEncryptKey(encryptKey);
         encryptedData.setDataStatus(ObjectUtils.firstNonNull(dataStatus, Constants.HEADER_DATA_STATUS_SUCCESS));
 
-        logger.info("encryptBody:{}, wolfuser:{}", StringUtils.abbreviate(data, 512), user.getUserid());
+        logger.info("encryptBody:{}, wolfuser:{}", StringUtils.abbreviate(data, 128), user.getUserid());
         return JSONObject.toJSONString(encryptedData);
     }
 }

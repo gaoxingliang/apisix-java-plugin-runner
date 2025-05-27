@@ -17,9 +17,12 @@ public class ApiLog {
     private String requestParameters = "";
     private String requestBody = "";
     private String status;
+    // in mills
     private long elapse;
     private String response;
     private int responseLength;
+    private String source = "SOURCE_DATA";
+    // http code
     private int code;
     private String requestId;
     private String ip;

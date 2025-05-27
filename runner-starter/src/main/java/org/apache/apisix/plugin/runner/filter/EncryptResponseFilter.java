@@ -1,6 +1,7 @@
 package org.apache.apisix.plugin.runner.filter;
 
 import cn.hutool.core.map.*;
+import cn.hutool.core.util.*;
 import org.apache.apisix.plugin.runner.*;
 import org.apache.apisix.plugin.runner.db.*;
 import org.apache.apisix.plugin.runner.db.model.*;
@@ -56,16 +57,25 @@ public class EncryptResponseFilter implements PluginFilter {
         } else {
             int httpcode = Optional.ofNullable(request.getUpstreamStatusCode()).orElse(500);
             String status = Constants.HEADER_DATA_STATUS_FAIL;
-            String responsebody = "";
+            String logResponseBody = "";
             if (httpcode == 200) {
                 status = ObjectUtils.firstNonNull(RequestUtils.getFirstHeaderValue(headers, Constants.HEADER_DATA_STATUS), Constants.HEADER_DATA_STATUS_SUCCESS);
-                responsebody = request.getBody(Charset.forName("UTF-8"));
+                String responsebody = request.getBody(StandardCharsets.UTF_8);
                 String encryptedBody = userService.encryptBody(responsebody, user, status);
                 response.setBody(encryptedBody);
                 // remove the header because the length is mismatch after encrypted.
                 // note it's case SENSITIVE. remove this header
                 response.setHeader("Content-Length", null);
                 response.setStatusCode(200);
+
+                // check whether the responsebody is gzipped.
+                String zipVersion = RequestUtils.getFirstHeaderValue(headers, Constants.HEADER_ZIP_VERSION);
+                if (zipVersion != null && zipVersion.equals(Constants.HEADER_ZIP_VERSION_VALUE_GZIP)) {
+                    logResponseBody = new String(ZipUtil.unGzip(Base64.getDecoder().decode(responsebody)), StandardCharsets.UTF_8);
+                } else {
+                    logResponseBody = responsebody;
+                }
+
                 logger.info("EncryptResponseFilter success: user(wolf): userid:{}, encrypted:{}, upstream headers:{}",
                         user.getUserid(),
                         StringUtils.abbreviate(encryptedBody, 128), headers
@@ -75,8 +85,8 @@ public class EncryptResponseFilter implements PluginFilter {
                 response.setStatusCode(httpcode);
                 try {
                     // if code is not 200, just return the raw response
-                    String rawResponseBody = request.getBody(Charset.forName("UTF-8"));
-                    responsebody = rawResponseBody;
+                    String rawResponseBody = request.getBody(StandardCharsets.UTF_8);
+                    logResponseBody = rawResponseBody;
                     logger.warn("EncryptResponseFilter return non 200 code：{}, headers:{}, raw response body:{}", request.getUpstreamStatusCode(), headers, rawResponseBody);
                     response.setBody(rawResponseBody);
                     response.setHeader("Content-Length", null);
@@ -86,7 +96,7 @@ public class EncryptResponseFilter implements PluginFilter {
             }
             if (requestId != null) {
                 response.setHeader(Constants.HEADER_REQUEST_ID, requestId);
-                logService.logRequestEnd(requestId, status, httpcode, responsebody);
+                logService.logRequestEnd(requestId, status, httpcode, logResponseBody);
             }
             response.setHeader(Constants.HEADER_DATA_STATUS, status);
 

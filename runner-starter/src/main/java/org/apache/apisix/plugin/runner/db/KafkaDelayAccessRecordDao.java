@@ -5,7 +5,7 @@ import org.apache.apisix.plugin.runner.db.model.*;
 import org.apache.ibatis.annotations.*;
 
 @Mapper
-public interface UserDao {
-    @DynDataSource(DataSourceEnum.APIGATEWAY)
-    User selectByWolfUserId(@Param("wolfUserId") int wolfUserId, @Param("provider") int provider);
+public interface KafkaDelayAccessRecordDao {
+    @DynDataSource(DataSourceEnum.LOGGING)
+    int insert(KafkaDelayAccessRecord record);
 }
