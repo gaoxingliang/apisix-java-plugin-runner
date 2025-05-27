@@ -19,13 +19,13 @@ public class ApiLog {
     private String status;
     // in mills
     private long elapse;
-    private String response;
-    private int responseLength;
+    private String response = "";
+    private int responseLength = 0;
     private String source = "SOURCE_DATA";
     // http code
     private int code;
     private String requestId;
-    private String ip;
+    private String ip = "";
 
     @Override
     public String toString() {
