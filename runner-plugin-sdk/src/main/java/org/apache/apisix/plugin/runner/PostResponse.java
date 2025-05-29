@@ -164,4 +164,8 @@ public class PostResponse implements A6Response {
     public void setCharset(Charset charset) {
         this.charset = charset;
     }
+
+    public long getRequestId() {
+        return requestId;
+    }
 }

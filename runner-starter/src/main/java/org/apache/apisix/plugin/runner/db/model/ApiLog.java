@@ -47,11 +47,11 @@ public class ApiLog {
     }
 
     public void setRequestParameters(String requestParameters) {
-        this.requestParameters = StringUtils.abbreviate(requestParameters, REQUEST_PARAMETERS_MAX_LENGTH);
+        this.requestParameters = requestParameters == null ? "" :StringUtils.abbreviate(requestParameters, REQUEST_PARAMETERS_MAX_LENGTH);
     }
 
     public void setRequestBody(String requestBody) {
-        this.requestBody = StringUtils.abbreviate(requestBody, REQUEST_BODY_MAX_LENGTH);
+        this.requestBody = requestBody == null ? "" :StringUtils.abbreviate(requestBody, REQUEST_BODY_MAX_LENGTH);
     }
 
     public void setResponse(String response) {

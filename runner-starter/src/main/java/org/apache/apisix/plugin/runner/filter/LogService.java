@@ -68,6 +68,7 @@ public class LogService {
                 logger.info("成功插入数据库：{},{}", delayRecord.getId());
             }
             logger.info("Finish request : {}", apiLog);
+            requestIdCache.invalidate(requestId);
         }
     }
 }

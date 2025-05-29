@@ -34,7 +34,7 @@ public class EncryptResponseFilter implements PluginFilter {
     @Override
     public void postFilter(PostRequest request, PostResponse response, PluginFilterChain chain) {
         Map<String, List<String>> headers = new CaseInsensitiveMap<>(request.getUpstreamHeaders());
-        logger.info("Receive upstream response, headers:{}", headers);
+        logger.info("Receive upstream response, apisix request id {}, headers:{} ", request.getRequestId(), headers);
         String userId = RequestUtils.getFirstHeaderValue(headers, Constants.HEADER_USER_ID);
         if (userId == null) {
             logger.warn("No user found in request:{}", headers);

@@ -36,4 +36,11 @@ public class Constants {
     public static final List<String> CLEAR_HEADER_WHEN_RESPONSE =  Arrays.asList(
             HEADER_INTERNAL_REQUEST_ID, HEADER_SOURCE, HEADER_REQUESTBODY_ENCRYPTED_FLAG, HEADER_USER_ID, HEADER_USERNAME, HEADER_NICKNAME
     );
+
+
+    /**
+     * Simple record request related stuff
+     */
+    public static final String RECORD_REQ_FILTER_ARG_SOURCE = "source";
+    public static final String RECORD_REQ_FILTER_ARG_USERID = "userId";
 }

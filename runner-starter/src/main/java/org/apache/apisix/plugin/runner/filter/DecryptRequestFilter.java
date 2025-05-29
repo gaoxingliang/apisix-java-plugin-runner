@@ -24,8 +24,6 @@ import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
 
-import java.util.*;
-
 import static org.apache.apisix.plugin.runner.filter.Constants.*;
 
 /**
@@ -72,7 +70,9 @@ public class DecryptRequestFilter implements PluginFilter {
 
     @Override
     public void filter(HttpRequest request, HttpResponse response, PluginFilterChain chain) {
-        logger.info("input headers:{}, url:{}, raw input:{}, ", request.getHeaders(), request.getPath(), StringUtils.abbreviate(request.getBody(), 32));
+        logger.info("input apisix request id {} headers:{}, url:{}, raw input:{}, ", request.getRequestId(),
+                request.getHeaders(), request.getPath(), StringUtils.abbreviate(request.getBody(), 32)
+        );
         User user = userService.tryFindUser(request.getHeader(Constants.HEADER_USER_ID), User.PROVIDER_US);
         if (user == null) {
             response.setStatusCode(403);
@@ -84,7 +84,7 @@ public class DecryptRequestFilter implements PluginFilter {
                 request.setHeader(HEADER_SOURCE, HEADER_SOURCE_VALUE_SOURCE_DATA);
                 String requestId = request.getHeader(HEADER_REQUEST_ID);
                 if (StringUtils.isBlank(requestId)) {
-                    requestId = UUID.randomUUID().toString().toLowerCase();
+                    requestId = RequestUtils.newRequestId();
                 }
                 request.setHeader(HEADER_INTERNAL_REQUEST_ID, requestId);
                 ApiLog log = new ApiLog();
