@@ -34,6 +34,7 @@ public class ApiLog {
                 ", rawkey='" + rawkey + '\'' +
                 ", path='" + path + '\'' +
                 ", method='" + method + '\'' +
+                ", source='" + source + '\'' +
                 ", userid=" + userid +
                 ", requestParameters='" + StringUtils.abbreviate(requestParameters, 64) + '\'' +
                 ", requestBody='" + StringUtils.abbreviate(requestBody, 64) + '\'' +

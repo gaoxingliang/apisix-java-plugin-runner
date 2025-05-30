@@ -63,6 +63,8 @@ public class RecordRequestFilter implements PluginFilter {
             requestId = RequestUtils.newRequestId();
         }
         request.setHeader(HEADER_INTERNAL_REQUEST_ID, requestId);
+        request.setHeader(HEADER_SOURCE, source);
+        request.setHeader(HEADER_USER_ID, userid + "");
         ApiLog log = new ApiLog();
         log.setUserid(userid);
         log.setMethod(request.getMethod().toString());

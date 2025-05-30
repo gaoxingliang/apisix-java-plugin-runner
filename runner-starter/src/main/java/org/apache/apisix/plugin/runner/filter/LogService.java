@@ -22,6 +22,9 @@ public class LogService {
             .expireAfterWrite(Duration.ofMinutes(5))
             .initialCapacity(1024).build();
 
+    @Value("${apilog.enable:true}")
+    boolean apilogEnable;
+
     @Autowired
     KafkaProducer<String, String> kafkaProducer;
     @Autowired
@@ -38,10 +41,15 @@ public class LogService {
     private final Logger logger = LoggerFactory.getLogger(LogService.class);
 
     public void logRequestStart(ApiLog log) {
-        requestIdCache.put(log.getRequestId(), log);
+        if (apilogEnable) {
+            requestIdCache.put(log.getRequestId(), log);
+        }
     }
 
     public void logRequestEnd(String requestId, String status, int httpcode, String responsebody) {
+        if (!apilogEnable) {
+            return;
+        }
         ApiLog apiLog = requestIdCache.getIfPresent(requestId);
         if (apiLog == null) {
             logger.warn("not found the request related request:{}", requestId);
